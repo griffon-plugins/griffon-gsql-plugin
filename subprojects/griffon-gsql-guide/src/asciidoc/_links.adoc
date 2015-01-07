@@ -1,0 +1,12 @@
+
+:link_griffon_datasource_plugin: link:http://griffon-plugins.github.io/griffon-datasource-plugin[griffon-datasource-plugin, window="_blank"]
+:link_gsql: link:http://docs.groovy-lang.org/docs/groovy-2.3.9/html/gapi/groovy/sql/Sql.html[Groovy SQL, window="_blank"].
+
+:api_gsql_handler: link:api/griffon/plugins/gsql/GsqlHandler.html[GsqlHandler, window="_blank"]
+:api_gsql_callback: link:api/griffon/plugins/gsql/GsqlCallback.html[GsqlCallback, window="_blank"]
+:api_gsql_aware: link:api/griffon/transform/GsqlAware.html[@GsqlAware, window="_blank"]
+:api_gsql_bootstrap: link:api/griffon/plugins/gsql/GsqlBootstrap.html[GsqlBootstrap, window="_blank"]
+
+:path_griffon_gsql_core: {rootdir}/subprojects/griffon-gsql-core
+:path_griffon_gsql_groovy_compile: {rootdir}/subprojects/griffon-gsql-groovy-compile
+

@@ -1,0 +1,136 @@
+
+[[_Usage]]
+= Usage
+
+The following sections describe how you may use this plugin in an project.
+
+== Configuration
+
+This plugin relies on the {link_griffon_datasource_plugin}. Please follow the instructions to configure this plugin first.
+
+The plugin's <<_modules, module>> registers a `{api_gsql_handler}` helper class that defines the base contract
+for accessing a datasource and issue SQL queries to it. This class has the following methods
+
+[source,java,options="nowrap"]
+.griffon.plugins.gsql.GsqlHandler.java
+----
+include::{path_griffon_gsql_core}/src/main/java//griffon/plugins/gsql/GsqlHandler.java[tags=methods,indent=0]
+----
+
+These method are aware of multiple datasources. If no datasourceName is specified when calling them then the default
+datasource will be selected. You can inject an instance of this class anywhere it's needed using `@Inject`. There is one
+callback you may use with this method: `{api_gsql_callback}`.
+
+This callback is defined using a functional interface approach, which means you can apply lambda expressions if running
+with JDK8+ or closures if running Groovy.
+
+[source,java,options="nowrap"]
+.griffon.plugins.gsql.GsqlCallback.java
+----
+include::{path_griffon_gsql_core}/src/main/java/griffon/plugins/gsql/GsqlCallback.java[lines=25..-1]
+----
+
+=== Bootstrap
+
+You may execute arbitrary database calls during connection and disconnection from a datasource. Simply
+create a class that implements the `{api_gsql_bootstrap}` interface and register it within a module, for example
+
+[source,java,options="nowrap"]
+.src/main/groovy/com/acme/SampleGsqlBootstrap.groovy
+----
+package com.acme
+
+import griffon.plugins.gsql.GsqlBootstrap
+import groovy.sql.Sql
+
+import javax.annotation.Nonnull
+import javax.inject.Named
+
+@Named("sample")
+class SampleGsqlBootstrap implements GsqlBootstrap {
+    @Override
+    void init(@Nonnull String datasourceName, @Nonnull Sql sql) {
+        // operations after first connection to datasource
+    }
+
+    @Override
+    void destroy(@Nonnull String datasourceName, @Nonnull Sql sql) {
+        // operations before disconnecting from the datasource
+    }
+}
+----
+
+[source,java,options="nowrap"]
+.src/main/java/com/acme/ApplicationModule.java
+----
+package com.acme;
+
+import griffon.plugins.gsql.GsqlBootstrap;
+import griffon.core.injection.Module;
+import org.codehaus.griffon.runtime.core.injection.AbstractModule;
+import org.kordamp.jipsy.ServiceProviderFor;
+
+@ServiceProviderFor(Module.class)
+public class ApplicationModule extends AbstractModule {
+    @Override
+    protected void doConfigure() {
+        bind(GsqlBootstrap.class)
+            .to(SampleGsqlBootstrap.class)
+            .asSingleton();
+    }
+}
+----
+
+== Example
+
+The following is a trivial usage of the `{api_gsql_handler}` inside a service
+
+[source,java,options="nowrap"]
+.com.acme.SampleService.groovy
+----
+package com.acme
+
+import griffon.core.artifact.GriffonService
+import griffon.metadata.ArtifactProviderFor
+import org.codehaus.griffon.runtime.core.artifact.AbstractGriffonService
+
+import griffon.plugins.gsql.GsqlHandler
+
+import javax.inject.Inject
+
+@ArtifactProviderFor(GriffonService)
+class SampleService {
+    @Inject
+    private GsqlHandler gsqlHandler
+
+    String getPersonName(final int id) {
+         gsqlHandler.withSql(String datasourceName, Sql sql ->
+             sql.firstRow("SELECT * FROM people WHERE id = ?", [id])?.name ?: null
+         }
+    }
+}
+----
+
+== Events
+
+The following events will be triggered by `{api_gsql_handler}`
+
+GsqlConnectStart(String datasourceName, Map<String, Object> config):: Triggered before connecting to the datasource.
+GsqlConnectEnd(String datasourceName, Map<String, Object> config, Sql sql):: Triggered after connecting to the datasource.
+GsqlDisconnectStart(String datasourceName, Map<String, Object> config, Sql sql):: Triggered before disconnecting from the datasource.
+GsqlDisconnectEnd(String datasourceName, Map<String, Object> config):: Triggered after disconnecting from the datasource.
+
+NOTE: DataSource events may be triggered during connection and disconnection from a datasource.
+
+== AST Transformation
+
+You can apply the `{api_gsql_aware}` AST transformation on any class. This injects the behavior of `{api_gsql_handler}`
+into said class.
+
+== DSL Descriptors
+
+This plugin provides DSL descriptors for Intellij IDEA and Eclipse (provided you have the Groovy Eclipse plugin installed).
+These descriptors are found inside the `griffon-gsql-groovy-compile-{project-version}.jar`, with locations
+
+ * dsdl/griffon_gsql.dsld
+ * gdsl/griffon_gsql.gdsl

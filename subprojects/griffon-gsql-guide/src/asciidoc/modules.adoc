@@ -1,0 +1,22 @@
+
+[[_modules]]
+= Modules
+:subproject-base: {rootdir}/subprojects/griffon-gsql-
+:java-source: /src/main/java/
+:package-base: org/codehaus/griffon/runtime/gsql
+:numbered:
+
+The following sections display all bindings per module. Use this information to
+successfully override a binding on your own modules or to troubleshoot a module
+binding if the wrong type has been applied by the Griffon runtime.
+
+== Gsql
+
+Module name: `gsql`
+
+Depends on: `datasource`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}core{java-source}{package-base}/GsqlModule.java[tags=bindings,indent=0]
+----
