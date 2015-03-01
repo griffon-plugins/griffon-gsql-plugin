@@ -16,12 +16,16 @@
 package org.codehaus.griffon.runtime.gsql;
 
 import griffon.core.GriffonApplication;
+import griffon.core.env.Metadata;
 import griffon.inject.DependsOn;
 import griffon.plugins.gsql.GsqlCallback;
 import griffon.plugins.gsql.GsqlFactory;
 import griffon.plugins.gsql.GsqlHandler;
+import griffon.plugins.gsql.GsqlStorage;
+import griffon.plugins.monitor.MBeanManager;
 import groovy.sql.Sql;
 import org.codehaus.griffon.runtime.core.addon.AbstractGriffonAddon;
+import org.codehaus.griffon.runtime.jmx.GsqlStorageMonitor;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -41,6 +45,20 @@ public class GsqlAddon extends AbstractGriffonAddon {
 
     @Inject
     private GsqlFactory gsqlFactory;
+
+    @Inject
+    private GsqlStorage gsqlStorage;
+
+    @Inject
+    private MBeanManager mbeanManager;
+
+    @Inject
+    private Metadata metadata;
+
+    @Override
+    public void init(@Nonnull GriffonApplication application) {
+        mbeanManager.registerMBean(new GsqlStorageMonitor(metadata, gsqlStorage));
+    }
 
     public void onStartupStart(@Nonnull GriffonApplication application) {
         for (String dataSourceName : gsqlFactory.getDatasourceNames()) {
