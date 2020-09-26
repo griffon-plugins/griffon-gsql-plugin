@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +17,26 @@
  */
 package griffon.plugins.gsql
 
+import griffon.annotations.inject.BindTo
 import griffon.core.GriffonApplication
 import griffon.core.RunnableWithArgs
-import griffon.core.test.GriffonUnitRule
-import griffon.inject.BindTo
+import griffon.plugins.datasource.events.DataSourceConnectEndEvent
+import griffon.plugins.datasource.events.DataSourceConnectStartEvent
+import griffon.plugins.datasource.events.DataSourceDisconnectEndEvent
+import griffon.plugins.datasource.events.DataSourceDisconnectStartEvent
+import griffon.plugins.gsql.events.GsqlConnectEndEvent
+import griffon.plugins.gsql.events.GsqlConnectStartEvent
+import griffon.plugins.gsql.events.GsqlDisconnectEndEvent
+import griffon.plugins.gsql.events.GsqlDisconnectStartEvent
 import griffon.plugins.gsql.exceptions.RuntimeGsqlException
+import griffon.test.core.GriffonUnitRule
 import groovy.sql.DataSet
 import groovy.sql.Sql
 import org.junit.Rule
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import javax.application.event.EventHandler
 import javax.inject.Inject
 
 @Unroll
@@ -46,17 +57,13 @@ class GsqlSpec extends Specification {
     void 'Open and close default gsql'() {
         given:
         List eventNames = [
-            'GsqlConnectStart', 'DataSourceConnectStart',
-            'DataSourceConnectEnd', 'GsqlConnectEnd',
-            'GsqlDisconnectStart', 'DataSourceDisconnectStart',
-            'DataSourceDisconnectEnd', 'GsqlDisconnectEnd'
+            'GsqlConnectStartEvent', 'DataSourceConnectStartEvent',
+            'DataSourceConnectEndEvent', 'GsqlConnectEndEvent',
+            'GsqlDisconnectStartEvent', 'DataSourceDisconnectStartEvent',
+            'DataSourceDisconnectEndEvent', 'GsqlDisconnectEndEvent'
         ]
-        List events = []
-        eventNames.each { name ->
-            application.eventRouter.addEventListener(name, ({ Object... args ->
-                events << [name: name, args: args]
-            }) as RunnableWithArgs)
-        }
+        TestEventHandler testEventHandler = new TestEventHandler()
+        application.eventRouter.subscribe(testEventHandler)
 
         when:
         gsqlHandler.withSql { String datasourceName, Sql sql ->
@@ -67,8 +74,8 @@ class GsqlSpec extends Specification {
         gsqlHandler.closeSql()
 
         then:
-        events.size() == 8
-        events.name == eventNames
+        testEventHandler.events.size() == 8
+        testEventHandler.events == eventNames
     }
 
     void 'Connect to default Sql'() {
@@ -172,4 +179,48 @@ class GsqlSpec extends Specification {
 
     @BindTo(GsqlBootstrap)
     private TestGsqlBootstrap bootstrap = new TestGsqlBootstrap()
+
+    private class TestEventHandler {
+        List<String> events = []
+
+        @EventHandler
+        void handleDataSourceConnectStartEvent(DataSourceConnectStartEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleDataSourceConnectEndEvent(DataSourceConnectEndEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleDataSourceDisconnectStartEvent(DataSourceDisconnectStartEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleDataSourceDisconnectEndEvent(DataSourceDisconnectEndEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleGsqlConnectStartEvent(GsqlConnectStartEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleGsqlConnectEndEvent(GsqlConnectEndEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleGsqlDisconnectStartEvent(GsqlDisconnectStartEvent event) {
+            events << event.class.simpleName
+        }
+
+        @EventHandler
+        void handleGsqlDisconnectEndEvent(GsqlDisconnectEndEvent event) {
+            events << event.class.simpleName
+        }
+    }
 }

@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +17,9 @@
  */
 package org.codehaus.griffon.compile.gsql.ast.transform;
 
+import griffon.annotations.core.Nonnull;
 import griffon.plugins.gsql.GsqlHandler;
-import griffon.transform.GsqlAware;
+import griffon.transform.gsql.GsqlAware;
 import org.codehaus.griffon.compile.core.AnnotationHandler;
 import org.codehaus.griffon.compile.core.AnnotationHandlerFor;
 import org.codehaus.griffon.compile.core.ast.transform.AbstractASTTransformation;
@@ -31,8 +34,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 
 import static org.codehaus.griffon.compile.core.ast.GriffonASTUtils.injectInterface;
 
@@ -49,6 +50,17 @@ public class GsqlAwareASTTransformation extends AbstractASTTransformation implem
     private static final ClassNode GSQL_AWARE_CNODE = makeClassSafe(GsqlAware.class);
 
     /**
+     * Handles the bulk of the processing, mostly delegating to other methods.
+     *
+     * @param nodes  the ast nodes
+     * @param source the source unit for the nodes
+     */
+    public void visit(ASTNode[] nodes, SourceUnit source) {
+        checkNodesForAnnotationAndType(nodes[0], nodes[1]);
+        addGsqlHandlerIfNeeded(source, (AnnotationNode) nodes[0], (ClassNode) nodes[1]);
+    }
+
+    /**
      * Convenience method to see if an annotated node is {@code @GsqlAware}.
      *
      * @param node the node to check
@@ -61,17 +73,6 @@ public class GsqlAwareASTTransformation extends AbstractASTTransformation implem
             }
         }
         return false;
-    }
-
-    /**
-     * Handles the bulk of the processing, mostly delegating to other methods.
-     *
-     * @param nodes  the ast nodes
-     * @param source the source unit for the nodes
-     */
-    public void visit(ASTNode[] nodes, SourceUnit source) {
-        checkNodesForAnnotationAndType(nodes[0], nodes[1]);
-        addGsqlHandlerIfNeeded(source, (AnnotationNode) nodes[0], (ClassNode) nodes[1]);
     }
 
     public static void addGsqlHandlerIfNeeded(SourceUnit source, AnnotationNode annotationNode, ClassNode classNode) {

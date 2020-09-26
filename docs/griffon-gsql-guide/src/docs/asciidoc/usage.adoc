@@ -27,7 +27,7 @@ with JDK8+ or closures if running Groovy.
 [source,java,options="nowrap"]
 .griffon.plugins.gsql.GsqlCallback.java
 ----
-include::{path_griffon_gsql_core}/src/main/java/griffon/plugins/gsql/GsqlCallback.java[lines=25..-1]
+include::{path_griffon_gsql_core}/src/main/java/griffon/plugins/gsql/GsqlCallback.java[lines=27..-1]
 ----
 
 === Bootstrap
@@ -91,14 +91,14 @@ The following is a trivial usage of the `{api_gsql_handler}` inside a service
 package com.acme
 
 import griffon.core.artifact.GriffonService
-import griffon.metadata.ArtifactProviderFor
 import org.codehaus.griffon.runtime.core.artifact.AbstractGriffonService
+import org.kordamp.jipsy.ServiceProviderFor
 
 import griffon.plugins.gsql.GsqlHandler
 
 import javax.inject.Inject
 
-@ArtifactProviderFor(GriffonService)
+@ServiceProviderFor(GriffonService)
 class SampleService {
     @Inject
     private GsqlHandler gsqlHandler
@@ -115,10 +115,10 @@ class SampleService {
 
 The following events will be triggered by `{api_gsql_handler}`
 
-GsqlConnectStart(String datasourceName, Map<String, Object> config):: Triggered before connecting to the datasource.
-GsqlConnectEnd(String datasourceName, Map<String, Object> config, Sql sql):: Triggered after connecting to the datasource.
-GsqlDisconnectStart(String datasourceName, Map<String, Object> config, Sql sql):: Triggered before disconnecting from the datasource.
-GsqlDisconnectEnd(String datasourceName, Map<String, Object> config):: Triggered after disconnecting from the datasource.
+GsqlConnectStartEvent(String datasourceName, Map<String, Object> config):: Triggered before connecting to the datasource.
+GsqlConnectEndEvent(String datasourceName, Map<String, Object> config, Sql sql):: Triggered after connecting to the datasource.
+GsqlDisconnectStartEvent(String datasourceName, Map<String, Object> config, Sql sql):: Triggered before disconnecting from the datasource.
+GsqlDisconnectEndEvent(String datasourceName, Map<String, Object> config):: Triggered after disconnecting from the datasource.
 
 NOTE: DataSource events may be triggered during connection and disconnection from a datasource.
 
