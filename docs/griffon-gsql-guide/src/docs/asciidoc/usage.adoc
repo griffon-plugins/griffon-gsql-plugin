@@ -68,7 +68,7 @@ package com.acme;
 import griffon.plugins.gsql.GsqlBootstrap;
 import griffon.core.injection.Module;
 import org.codehaus.griffon.runtime.core.injection.AbstractModule;
-import org.kordamp.jipsy.ServiceProviderFor;
+import org.kordamp.jipsy.annotations.ServiceProviderFor;
 
 @ServiceProviderFor(Module.class)
 public class ApplicationModule extends AbstractModule {
@@ -92,7 +92,7 @@ package com.acme
 
 import griffon.core.artifact.GriffonService
 import org.codehaus.griffon.runtime.core.artifact.AbstractGriffonService
-import org.kordamp.jipsy.ServiceProviderFor
+import org.kordamp.jipsy.annotations.ServiceProviderFor
 
 import griffon.plugins.gsql.GsqlHandler
 
